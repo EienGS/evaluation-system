@@ -3,7 +3,7 @@ from llm_parser import parse_plan
 from normalizer import normalize
 from rule_engine import calculate_total
 from config_loader import load_config
-from docx_converter import docx_to_markdown
+from docx_converter import docx_to_markdown, doc_to_markdown
 from openpyxl import Workbook
 import io
 import json
@@ -31,8 +31,10 @@ def evaluate_file():
 
     try:
         raw_bytes = uploaded.read()
-        if ext in (".docx",):
+        if ext == ".docx":
             md_text = docx_to_markdown(raw_bytes)
+        elif ext == ".doc":
+            md_text = doc_to_markdown(raw_bytes)
         else:
             md_text = raw_bytes.decode("utf-8", errors="replace")
 

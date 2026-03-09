@@ -70,7 +70,7 @@ dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-ove
 dropZone.addEventListener("drop", e => {
     e.preventDefault()
     dropZone.classList.remove("drag-over")
-    const files = Array.from(e.dataTransfer.files).filter(f => f.name.match(/\.(md|markdown|docx)$/i))
+    const files = Array.from(e.dataTransfer.files).filter(f => f.name.match(/\.(md|markdown|docx|doc)$/i))
     addFiles(files)
 })
 
