@@ -20,7 +20,6 @@ def normalize(data):
 
         users = s.get("users",{})
 
-        system["users"] = users.get("online_users",0)
         system["concurrent_users"] = users.get("concurrent_users",0)
 
         systems.append(system)

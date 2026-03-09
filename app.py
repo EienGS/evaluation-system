@@ -60,16 +60,12 @@ def generate_excel(data):
 
     ws.append([
         "系统名称",
-        "模块数",
-        "接口数",
-        "数据库",
-        "数据源",
-        "用户角色",
         "模块工作量",
         "接口工作量",
         "数据库工作量",
         "数据对接工作量",
         "权限工作量",
+        "复杂度系数",
         "总工作量(人天)"
     ])
 
@@ -77,16 +73,12 @@ def generate_excel(data):
 
         ws.append([
             sys["name"],
-            sys["modules"],
-            sys["interfaces"],
-            sys["databases"],
-            sys["data_sources"],
-            sys["roles"],
             sys["module_work"],
             sys["interface_work"],
             sys["db_work"],
             sys["data_work"],
             sys["user_work"],
+            sys["complexity"],
             sys["total_work"]
         ])
 
