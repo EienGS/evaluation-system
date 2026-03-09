@@ -40,3 +40,30 @@ function evaluate(){
     })
 
 }
+
+function exportExcel(){
+
+    const evalText = document.getElementById("evaluation").innerText
+
+    fetch("/export_excel",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:evalText
+    })
+    .then(res => res.blob())
+    .then(blob => {
+
+        const url = window.URL.createObjectURL(blob)
+
+        const a = document.createElement("a")
+        a.href = url
+        a.download = "workload_evaluation.xlsx"
+        a.click()
+
+        window.URL.revokeObjectURL(url)
+
+    })
+
+}

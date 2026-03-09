@@ -3,6 +3,9 @@ from llm_parser import parse_plan
 from normalizer import normalize
 from rule_engine import calculate_total
 from config_loader import load_config
+from openpyxl import Workbook
+from flask import send_file
+import io
 
 app = Flask(__name__)
 
@@ -34,6 +37,67 @@ def evaluate():
     result = calculate_total(normalized, config)
 
     return jsonify(result)
+
+@app.route("/export_excel", methods=["POST"])
+def export_excel():
+
+    data = request.json
+
+    file_stream = generate_excel(data)
+
+    return send_file(
+        file_stream,
+        as_attachment=True,
+        download_name="workload_evaluation.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+def generate_excel(data):
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "工作量评估"
+
+    ws.append([
+        "系统名称",
+        "模块数",
+        "接口数",
+        "数据库",
+        "数据源",
+        "用户角色",
+        "模块工作量",
+        "接口工作量",
+        "数据库工作量",
+        "数据对接工作量",
+        "权限工作量",
+        "总工作量(人天)"
+    ])
+
+    for sys in data["systems"]:
+
+        ws.append([
+            sys["name"],
+            sys["modules"],
+            sys["interfaces"],
+            sys["databases"],
+            sys["data_sources"],
+            sys["roles"],
+            sys["module_work"],
+            sys["interface_work"],
+            sys["db_work"],
+            sys["data_work"],
+            sys["user_work"],
+            sys["total_work"]
+        ])
+
+    ws.append([])
+    ws.append(["总工作量", data["total_workload"]])
+
+    file_stream = io.BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+
+    return file_stream
 
 if __name__ == "__main__":
     app.run(debug=True)
