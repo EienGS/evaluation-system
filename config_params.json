@@ -1,0 +1,11 @@
+{
+  "module_factor": 2,
+  "interface_factor": 0.5,
+  "table_factor": 0.1,
+  "data_factor": 0.02,
+  "user_factor": 0.01,
+
+  "price_per_day": 1800,
+  "management_rate": 0.1,
+  "risk_rate": 0.15
+}
