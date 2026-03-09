@@ -245,8 +245,45 @@ def _sheet_cover(wb, ok_results):
         _merge_style(ws, f"E{row}:J{row}", val, bold=False, size=11,
                      color=C_TEXT, align="left")
 
+    # 技术栈对照（汇总所有项目）
+    all_existing = {}
+    all_target = {}
+    for r in ok_results:
+        d = r["data"]
+        for k, v in d.get("existing_tech_stack", {}).items():
+            if v and k not in all_existing:
+                all_existing[k] = v
+        for k, v in d.get("target_tech_stack", {}).items():
+            if v and k not in all_target:
+                all_target[k] = v
+
+    if all_existing or all_target:
+        tech_start = 24
+        _merge_style(ws, f"B{tech_start}:J{tech_start}",
+                     "技术栈改造对照",
+                     bold=True, size=11, color=C_WHITE, bg=C_BLUE, align="center")
+        tech_start += 1
+        _merge_style(ws, f"B{tech_start}:E{tech_start}", "改造维度",
+                     bold=True, size=10, color=C_WHITE, bg=C_BLUE_DARK, align="center")
+        _merge_style(ws, f"F{tech_start}:G{tech_start}", "现有技术栈",
+                     bold=True, size=10, color=C_WHITE, bg=C_BLUE_DARK, align="center")
+        _merge_style(ws, f"H{tech_start}:J{tech_start}", "改造目标（信创）",
+                     bold=True, size=10, color=C_WHITE, bg=C_BLUE_DARK, align="center")
+        tech_start += 1
+        label_map = {"database": "数据库", "os": "操作系统", "middleware": "中间件",
+                     "hardware": "硬件平台", "frontend": "前端框架", "etl": "ETL平台"}
+        all_keys = list(dict.fromkeys(list(all_existing.keys()) + list(all_target.keys())))
+        for ki, key in enumerate(all_keys):
+            bg = C_BLUE_LIGHT if ki % 2 == 0 else C_WHITE
+            label = label_map.get(key, key)
+            _merge_style(ws, f"B{tech_start}:E{tech_start}", label, bg=bg, align="left")
+            _merge_style(ws, f"F{tech_start}:G{tech_start}", all_existing.get(key, "—"), bg=bg, align="left")
+            _merge_style(ws, f"H{tech_start}:J{tech_start}", all_target.get(key, "—"), bg=bg, color="1E8449", align="left")
+            tech_start += 1
+
     # 免责声明
-    _merge_style(ws, "B25:J28",
+    note_row = max(tech_start + 1, 34)
+    _merge_style(ws, f"B{note_row}:J{note_row + 2}",
                  "【说明】本报告依据建设方案文档，结合信创改造工作量模型自动生成，"
                  "仅作为项目预算参考依据，最终费用以正式合同及详细方案为准。",
                  bold=False, size=9, color="888888", bg=C_GRAY, align="left", wrap=True)
@@ -362,7 +399,7 @@ def _sheet_cost_breakdown(wb, ok_results):
     notes = [
         "【级别系数说明】核心系统×1.3，重要系统×1.1，一般系统×1.0",
         "【复杂度系数说明】基础1.0，模块>20增加0.15，接口>30增加0.10，改造类型≥4增加0.20，≥2增加0.10（可叠加）",
-        "【改造附加量说明】数据库替换+30人天，硬件架构适配+20人天，操作系统适配+15人天，中间件替换+10人天等",
+        "【改造附加量说明】数据库替换+80人天，ETL平台适配+60人天，数据迁移+40人天，硬件架构适配+25人天，操作系统适配+20人天，安全加固+15人天，中间件替换+15人天，前端框架适配+12人天，接口改造+8人天/系统；外部对接接口按接口数×8人天单独计入项目级工作量",
     ]
     for note in notes:
         _merge_style(ws, f"A{row_idx}:J{row_idx}", note,
@@ -577,8 +614,8 @@ def _sheet_params(wb):
          config.get("data_factor", 0.005),
          "每GB数据的迁移工作量（人天）"),
         ("人天费率 price_per_day",
-         config.get("price_per_day", 1800),
-         "每人天综合费率（元），含人员工资、社保、管理分摊"),
+         config.get("price_per_day", 2200),
+         "每人天综合费率（元），含人员工资、社保、管理分摊；信创项目人才紧缺，建议2000~2500元"),
         ("测试费率 test_rate",
          f"{config.get('test_rate', 0.12)*100:.0f}%",
          "测试费 = 人工费 × 测试费率，含功能测试、兼容性测试"),

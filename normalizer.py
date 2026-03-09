@@ -68,5 +68,8 @@ def normalize(data):
     return {
         "project_name": data.get("project_name", ""),
         "project_background": data.get("project_background", ""),
+        "existing_tech_stack": data.get("existing_tech_stack", {}),
+        "target_tech_stack": data.get("target_tech_stack", {}),
+        "external_interfaces": to_int(data.get("external_interfaces", 0)),
         "systems": systems
     }

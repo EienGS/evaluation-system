@@ -125,7 +125,12 @@ def calculate_total(data, config):
         total_workload += r["total_work"]
         results.append(r)
 
-    price_per_day = config.get("price_per_day", 1800)
+    # 外部接口对接专项工作量（接口改造系数 × 接口数量）
+    external_interfaces = data.get("external_interfaces", 0)
+    interface_addon = external_interfaces * config.get("adaptation_factors", DEFAULT_ADAPTATION_FACTORS).get("接口改造", 8)
+    total_workload += interface_addon
+
+    price_per_day = config.get("price_per_day", 2200)
     test_rate = config.get("test_rate", 0.12)
     management_rate = config.get("management_rate", 0.12)
     risk_rate = config.get("risk_rate", 0.08)
@@ -142,6 +147,10 @@ def calculate_total(data, config):
     return {
         "project_name": data.get("project_name", ""),
         "project_background": data.get("project_background", ""),
+        "existing_tech_stack": data.get("existing_tech_stack", {}),
+        "target_tech_stack": data.get("target_tech_stack", {}),
+        "external_interfaces": external_interfaces,
+        "interface_addon_work": round(interface_addon, 2),
         "systems": results,
         "total_workload": round(total_workload, 2),
         "cost": {
