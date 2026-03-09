@@ -106,6 +106,7 @@ async function runAll() {
 
             if (json.success) {
                 item.status = "success"
+                console.log("[v0] evaluate result:", JSON.stringify(json.data))
                 evalResults.push(json.data)
                 appendResultRows(json.data)
                 successCount++
