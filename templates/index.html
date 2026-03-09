@@ -277,9 +277,9 @@ tr:hover td { background: #f7f9fc; }
             <!-- 上传区 -->
             <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
                 <div class="upload-icon">&#128196;</div>
-                <p><strong>点击选择</strong> 或将 Markdown 文件拖放到此处</p>
-                <p>支持同时导入多个 .md 文件</p>
-                <input type="file" id="fileInput" multiple accept=".md,.markdown" onchange="addFiles(this.files)">
+                <p><strong>点击选择</strong> 或将文件拖放到此处</p>
+                <p>支持同时导入多个 .md / .docx 文件</p>
+                <input type="file" id="fileInput" multiple accept=".md,.markdown,.docx" onchange="addFiles(this.files)">
             </div>
 
             <!-- 文件列表 -->

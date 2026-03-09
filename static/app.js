@@ -70,7 +70,7 @@ dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-ove
 dropZone.addEventListener("drop", e => {
     e.preventDefault()
     dropZone.classList.remove("drag-over")
-    const files = Array.from(e.dataTransfer.files).filter(f => f.name.match(/\.(md|markdown)$/i))
+    const files = Array.from(e.dataTransfer.files).filter(f => f.name.match(/\.(md|markdown|docx)$/i))
     addFiles(files)
 })
 
@@ -96,11 +96,11 @@ async function runAll() {
         setProgress(`正在处理 ${i + 1} / ${fileQueue.length}：${item.name}`)
 
         try {
-            const md = await readFileText(item.file)
+            const formData = new FormData()
+            formData.append("file", item.file, item.name)
             const resp = await fetch("/evaluate_file", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ md, filename: item.name })
+                body: formData
             })
             const json = await resp.json()
 
@@ -131,15 +131,6 @@ async function runAll() {
     }
     document.getElementById("runBtn").disabled = false
     updateButtons()
-}
-
-function readFileText(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = e => resolve(e.target.result)
-        reader.onerror = () => reject(new Error("文件读取失败"))
-        reader.readAsText(file, "utf-8")
-    })
 }
 
 function setProgress(msg) {

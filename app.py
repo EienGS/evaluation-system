@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 from llm_parser import parse_plan
 from normalizer import normalize
 from rule_engine import calculate_total
 from config_loader import load_config
+from docx_converter import docx_to_markdown
 from openpyxl import Workbook
-from flask import send_file
 import io
 import json
 import os
@@ -21,12 +21,21 @@ def index():
 
 @app.route("/evaluate_file", methods=["POST"])
 def evaluate_file():
-    """接收单个 md 文件内容，串联解析+评估，返回完整结果"""
-    data = request.json
-    md_text = data.get("md", "")
-    filename = data.get("filename", "未知文件")
+    """接收单个 md 或 docx 文件（multipart），串联解析+评估，返回完整结果"""
+    uploaded = request.files.get("file")
+    if not uploaded:
+        return jsonify({"success": False, "error": "未收到文件"}), 200
+
+    filename = uploaded.filename or "未知文件"
+    ext = os.path.splitext(filename)[1].lower()
 
     try:
+        raw_bytes = uploaded.read()
+        if ext in (".docx",):
+            md_text = docx_to_markdown(raw_bytes)
+        else:
+            md_text = raw_bytes.decode("utf-8", errors="replace")
+
         parsed_str = parse_plan(md_text)
         parsed = json.loads(parsed_str)
         normalized = normalize(parsed)
