@@ -8,7 +8,6 @@ def to_float(val, default=0.0):
     if isinstance(val, (int, float)):
         return float(val)
     if isinstance(val, str):
-        # 提取第一段数字（含小数点）
         m = re.search(r"[\d.]+", val)
         if m:
             return float(m.group())
@@ -16,7 +15,6 @@ def to_float(val, default=0.0):
 
 
 def to_int(val, default=0):
-    """将任意值安全转换为 int。"""
     return int(to_float(val, default))
 
 
@@ -33,8 +31,17 @@ def normalize(data):
 
         system = {}
         system["name"] = s.get("name", "未知系统")
+        system["level"] = s.get("level", "一般")
+        system["complexity_note"] = s.get("complexity_note", "")
 
-        # modules / interfaces / tables 可能是列表或整数
+        # 技术栈与改造类型
+        tech_stack = s.get("tech_stack", [])
+        system["tech_stack"] = tech_stack if isinstance(tech_stack, list) else []
+
+        adaptation_type = s.get("adaptation_type", [])
+        system["adaptation_type"] = adaptation_type if isinstance(adaptation_type, list) else []
+
+        # 数量字段：兼容列表或整数
         modules = s.get("modules", [])
         system["module_count"] = len(modules) if isinstance(modules, list) else to_int(modules)
 
@@ -44,20 +51,22 @@ def normalize(data):
         tables = s.get("tables", [])
         system["table_count"] = len(tables) if isinstance(tables, list) else to_int(tables)
 
-        # data_size_gb 可能是数字、字符串或 None
-        data_size = s.get("data_size_gb")
-        system["data_size_gb"] = to_float(data_size, default=50.0)
+        # data_size_gb 默认 0（避免凭空增加工作量）
+        system["data_size_gb"] = to_float(s.get("data_size_gb"), default=0.0)
 
-        # users 可能是字典、整数或 None
+        # users
         users = s.get("users", {})
         if isinstance(users, dict):
             system["users"] = to_int(users.get("online_users", 0))
             system["concurrent_users"] = to_int(users.get("concurrent_users", 0))
         else:
-            # 直接给了一个数字
             system["users"] = to_int(users)
             system["concurrent_users"] = 0
 
         systems.append(system)
 
-    return {"systems": systems}
+    return {
+        "project_name": data.get("project_name", ""),
+        "project_background": data.get("project_background", ""),
+        "systems": systems
+    }

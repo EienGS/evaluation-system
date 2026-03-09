@@ -1,11 +1,22 @@
 {
-  "module_factor": 2,
+  "module_factor": 2.0,
   "interface_factor": 0.5,
-  "table_factor": 0.1,
-  "data_factor": 0.02,
-  "user_factor": 0.01,
+  "table_factor": 0.3,
+  "data_factor": 0.005,
+
+  "adaptation_factors": {
+    "数据库替换": 30,
+    "操作系统适配": 15,
+    "中间件替换": 10,
+    "硬件架构适配": 20,
+    "前端框架适配": 8,
+    "接口改造": 5,
+    "安全加固": 10
+  },
 
   "price_per_day": 1800,
-  "management_rate": 0.1,
-  "risk_rate": 0.15
+  "test_rate": 0.12,
+  "management_rate": 0.12,
+  "risk_rate": 0.08,
+  "tax_rate": 0.09
 }

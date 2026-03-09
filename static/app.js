@@ -21,7 +21,6 @@ function showToast(msg, type) {
 }
 
 /* ========== 文件上传 ========== */
-// 拖拽支持
 (function () {
   const zone = document.getElementById("uploadZone");
   zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("dragover"); });
@@ -61,6 +60,7 @@ function renderFileList() {
       </svg>
       <span class="file-name">${escHtml(f.name)}</span>
       <span class="file-size">${formatSize(f.size)}</span>
+      ${f.error ? `<span class="file-error" title="${escHtml(f.error)}">${escHtml(f.error.substring(0, 60))}…</span>` : ""}
       <span class="file-status status-${status}">${statusLabels[status]}</span>
       ${status === "pending" ? `<button class="file-remove" onclick="removeFile(${idx})" title="移除">×</button>` : ""}
     `;
@@ -89,16 +89,15 @@ function formatSize(bytes) {
 }
 
 function escHtml(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 /* ========== 批量评估 ========== */
 async function runBatch() {
   if (selectedFiles.length === 0) return;
 
-  // 重置状态
   batchResults = [];
-  selectedFiles.forEach(f => f.status = "pending");
+  selectedFiles.forEach(f => { f.status = "pending"; delete f.error; });
 
   const btnRun = document.getElementById("btnRun");
   btnRun.disabled = true;
@@ -127,12 +126,11 @@ async function runBatch() {
       const result = json.results[0];
       if (result.status === "ok") {
         f.status = "ok";
-        batchResults.push(result);
       } else {
         f.status = "error";
         f.error = result.error;
-        batchResults.push(result);
       }
+      batchResults.push(result);
     } catch (e) {
       f.status = "error";
       f.error = e.message;
@@ -141,14 +139,16 @@ async function runBatch() {
     renderFileList();
   }
 
+  const okCount = selectedFiles.filter(f => f.status === "ok").length;
+  const errCount = selectedFiles.filter(f => f.status === "error").length;
   progressBar.style.width = "100%";
-  progressLabel.textContent = `处理完成：${selectedFiles.filter(f => f.status === "ok").length} 个成功，${selectedFiles.filter(f => f.status === "error").length} 个失败`;
+  progressLabel.textContent = `处理完成：${okCount} 个成功，${errCount} 个失败`;
 
   btnRun.disabled = false;
   btnRun.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> 重新评估`;
 
   renderResults();
-  showToast(`评估完成，${batchResults.filter(r => r.status === "ok").length} 个成功`, "ok");
+  showToast(`评估完成，${okCount} 个成功`, okCount > 0 ? "ok" : "err");
 }
 
 function renderResults() {
@@ -158,17 +158,15 @@ function renderResults() {
   if (batchResults.length === 0) { section.style.display = "none"; return; }
   section.style.display = "block";
 
-  // 统计
   let totalWork = 0, totalCost = 0;
   okResults.forEach(r => {
     totalWork += r.data.total_workload || 0;
-    totalCost += (r.data.cost && r.data.cost.total_cost) || 0;
+    totalCost += (r.data.cost && r.data.cost.total_incl_tax) || 0;
   });
   document.getElementById("statOk").textContent = okResults.length;
   document.getElementById("statWork").textContent = totalWork.toFixed(1);
   document.getElementById("statCost").textContent = (totalCost / 10000).toFixed(2);
 
-  // 表格
   const tbody = document.getElementById("resultBody");
   tbody.innerHTML = "";
 
@@ -180,17 +178,19 @@ function renderResults() {
       tr.innerHTML = `
         <td>${escHtml(r.name)}</td>
         <td>${(d.systems || []).length}</td>
-        <td class="td-total">${(d.total_workload || 0).toFixed(2)}</td>
-        <td>${fmt(cost.dev_cost)}</td>
+        <td class="td-total">${(d.total_workload || 0).toFixed(1)}</td>
+        <td>${fmt(cost.labor_cost)}</td>
+        <td>${fmt(cost.test_cost)}</td>
         <td>${fmt(cost.management_cost)}</td>
         <td>${fmt(cost.risk_cost)}</td>
-        <td class="td-cost">${fmt(cost.total_cost)}</td>
+        <td>${fmt(cost.total_excl_tax)}</td>
+        <td class="td-cost">${fmt(cost.total_incl_tax)}</td>
         <td><span class="file-status status-ok">成功</span></td>
       `;
     } else {
       tr.innerHTML = `
         <td>${escHtml(r.name)}</td>
-        <td colspan="6" class="td-err">处理失败：${escHtml(r.error || "未知错误")}</td>
+        <td colspan="8" class="td-err">处理失败：${escHtml(r.error || "未知错误")}</td>
         <td><span class="file-status status-error">失败</span></td>
       `;
     }
@@ -236,8 +236,17 @@ function loadConfigToForm() {
   fetch("/config")
     .then(r => r.json())
     .then(cfg => {
-      Object.entries(cfg).forEach(([k, v]) => {
+      // 基础参数
+      const basicKeys = ["module_factor","interface_factor","table_factor","data_factor",
+                         "price_per_day","test_rate","management_rate","risk_rate","tax_rate"];
+      basicKeys.forEach(k => {
         const el = document.getElementById("p_" + k);
+        if (el) el.value = cfg[k] !== undefined ? cfg[k] : "";
+      });
+      // 改造附加量参数
+      const af = cfg.adaptation_factors || {};
+      Object.entries(af).forEach(([k, v]) => {
+        const el = document.getElementById("af_" + k);
         if (el) el.value = v;
       });
     })
@@ -245,17 +254,32 @@ function loadConfigToForm() {
 }
 
 function saveConfig() {
-  const inputs = document.querySelectorAll("#configForm input[name]");
-  const cfg = {};
-  inputs.forEach(inp => {
-    cfg[inp.name] = parseFloat(inp.value);
-  });
-  fetch("/config", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(cfg)
-  })
-  .then(r => r.json())
-  .then(() => showToast("参数保存成功", "ok"))
-  .catch(e => showToast("保存失败：" + e.message, "err"));
+  // 先加载当前配置（保留 adaptation_factors 结构）
+  fetch("/config")
+    .then(r => r.json())
+    .then(cfg => {
+      // 覆盖基础参数
+      const basicKeys = ["module_factor","interface_factor","table_factor","data_factor",
+                         "price_per_day","test_rate","management_rate","risk_rate","tax_rate"];
+      basicKeys.forEach(k => {
+        const el = document.getElementById("p_" + k);
+        if (el) cfg[k] = parseFloat(el.value);
+      });
+      // 覆盖改造附加量
+      if (!cfg.adaptation_factors) cfg.adaptation_factors = {};
+      const afKeys = Object.keys(cfg.adaptation_factors);
+      afKeys.forEach(k => {
+        const el = document.getElementById("af_" + k);
+        if (el) cfg.adaptation_factors[k] = parseFloat(el.value);
+      });
+
+      return fetch("/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cfg)
+      });
+    })
+    .then(r => r.json())
+    .then(() => showToast("参数保存成功", "ok"))
+    .catch(e => showToast("保存失败：" + e.message, "err"));
 }

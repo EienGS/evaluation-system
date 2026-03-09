@@ -408,7 +408,7 @@
       <!-- 统计卡片 -->
       <div class="result-stats">
         <div class="stat-card">
-          <div class="stat-label">成功处理</div>
+          <div class="stat-label">成功处���</div>
           <div class="stat-value" id="statOk">0</div>
           <span class="stat-unit">个文件</span>
         </div>
@@ -432,10 +432,12 @@
               <th>文件名</th>
               <th>系统数</th>
               <th>总工作量(人天)</th>
-              <th>开发费用(元)</th>
-              <th>管理费用(元)</th>
-              <th>风险费用(元)</th>
-              <th>合计费用(元)</th>
+              <th>人工费(元)</th>
+              <th>测试费(元)</th>
+              <th>管理费(元)</th>
+              <th>风险费(元)</th>
+              <th>不含税合计(元)</th>
+              <th>含税合计(元)</th>
               <th>状态</th>
             </tr>
           </thead>
@@ -490,9 +492,56 @@
           <input class="form-input" type="number" step="0.01" id="p_management_rate" name="management_rate">
         </div>
         <div class="form-group">
-          <label class="form-label" for="p_risk_rate">风险系数</label>
-          <span class="form-hint">风险费占开发费用的比例（如 0.15 = 15%）</span>
+          <label class="form-label" for="p_risk_rate">风险费率</label>
+          <span class="form-hint">风险不可预见费比例（如 0.08 = 8%）</span>
           <input class="form-input" type="number" step="0.01" id="p_risk_rate" name="risk_rate">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="p_test_rate">测试费率</label>
+          <span class="form-hint">测试费 = 人工费 × 测试费率（如 0.12 = 12%）</span>
+          <input class="form-input" type="number" step="0.01" id="p_test_rate" name="test_rate">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="p_tax_rate">增值税率</label>
+          <span class="form-hint">信息服务增值税（如 0.09 = 9%）</span>
+          <input class="form-input" type="number" step="0.01" id="p_tax_rate" name="tax_rate">
+        </div>
+
+        <p class="form-section-title">改造类型附加工作量（人天/系统）</p>
+        <div class="form-group">
+          <label class="form-label" for="af_数据库替换">数据库替换</label>
+          <span class="form-hint">如 Oracle → 达梦/人大金仓</span>
+          <input class="form-input" type="number" step="1" id="af_数据库替换">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="af_硬件架构适配">硬件架构适配</label>
+          <span class="form-hint">如 x86 → 鲲鹏/飞腾</span>
+          <input class="form-input" type="number" step="1" id="af_硬件架构适配">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="af_操作系统适配">操作系统适配</label>
+          <span class="form-hint">如 Windows → 麒麟/统信</span>
+          <input class="form-input" type="number" step="1" id="af_操作系统适配">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="af_中间件替换">中间件替换</label>
+          <span class="form-hint">如 Tomcat/WebLogic → 东方通/金蝶</span>
+          <input class="form-input" type="number" step="1" id="af_中间件替换">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="af_前端框架适配">前端框架适配</label>
+          <span class="form-hint">前端兼容性改造工作量</span>
+          <input class="form-input" type="number" step="1" id="af_前端框架适配">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="af_接口改造">接口改造</label>
+          <span class="form-hint">外部接口协议/格式适配</span>
+          <input class="form-input" type="number" step="1" id="af_接口改造">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="af_安全加固">安全加固</label>
+          <span class="form-hint">等保合规、密码改造等</span>
+          <input class="form-input" type="number" step="1" id="af_安全加固">
         </div>
       </div>
       <div class="btn-row" style="margin-top:24px;">
