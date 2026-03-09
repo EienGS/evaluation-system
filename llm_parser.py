@@ -41,8 +41,18 @@ systems:
         "Content-Type":"application/json"
     }
 
-    r = requests.post(DEEPSEEK_API,json=payload,headers=headers)
+    r = requests.post(DEEPSEEK_API, json=payload, headers=headers)
+    r.raise_for_status()
 
-    result = r.json()
+    content = r.json()["choices"][0]["message"]["content"]
 
-    return result["choices"][0]["message"]["content"]
+    # 去除 LLM 可能包裹的 markdown 代码块标记
+    content = content.strip()
+    if content.startswith("```"):
+        lines = content.splitlines()
+        # 去掉首行 ```json 或 ``` 和末行 ```
+        lines = lines[1:] if lines[0].startswith("```") else lines
+        lines = lines[:-1] if lines and lines[-1].strip() == "```" else lines
+        content = "\n".join(lines).strip()
+
+    return content
