@@ -1,58 +1,512 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>信创评估系统 - 建设方案解析</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信创适配费用评估系统</title>
 <style>
+  :root {
+    --primary: #1a56db;
+    --primary-dark: #1240a8;
+    --primary-light: #e8f0fe;
+    --success: #0f7b4a;
+    --success-bg: #e6f5ee;
+    --error: #c0392b;
+    --error-bg: #fdecea;
+    --warning: #b45309;
+    --warning-bg: #fef3c7;
+    --neutral-900: #111827;
+    --neutral-700: #374151;
+    --neutral-500: #6b7280;
+    --neutral-300: #d1d5db;
+    --neutral-100: #f3f4f6;
+    --neutral-50: #f9fafb;
+    --white: #ffffff;
+    --border: #e5e7eb;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,.10), 0 2px 4px -1px rgba(0,0,0,.06);
+  }
 
-body{
-    font-family: Arial;
-    margin:40px;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-textarea{
-    width:100%;
-    height:300px;
-}
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: var(--neutral-100);
+    color: var(--neutral-900);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
 
-button{
-    padding:10px 20px;
-    margin-top:10px;
-}
+  /* Header */
+  .header {
+    background: var(--primary);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow-md);
+  }
+  .header-title {
+    color: var(--white);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: .5px;
+  }
+  .header-badge {
+    background: rgba(255,255,255,.18);
+    color: var(--white);
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 20px;
+  }
 
-pre{
-    background:#f5f5f5;
-    padding:20px;
-}
+  /* Layout */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
 
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+  .tab-btn {
+    padding: 8px 22px;
+    border: none;
+    background: transparent;
+    color: var(--neutral-500);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .tab-btn.active {
+    background: var(--white);
+    color: var(--primary);
+    box-shadow: var(--shadow);
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* Card */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--neutral-700);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2px dashed var(--neutral-300);
+    border-radius: var(--radius);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .upload-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 12px;
+    color: var(--neutral-500);
+  }
+  .upload-text { font-size: 14px; color: var(--neutral-500); }
+  .upload-text strong { color: var(--primary); }
+  .upload-hint { font-size: 12px; color: var(--neutral-500); margin-top: 6px; }
+
+  /* File list */
+  .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--neutral-50);
+    font-size: 13px;
+  }
+  .file-name { flex: 1; color: var(--neutral-700); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-size { color: var(--neutral-500); font-size: 12px; flex-shrink: 0; }
+  .file-status { flex-shrink: 0; font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 4px; }
+  .status-pending { background: var(--neutral-100); color: var(--neutral-500); }
+  .status-processing { background: var(--primary-light); color: var(--primary); }
+  .status-ok { background: var(--success-bg); color: var(--success); }
+  .status-error { background: var(--error-bg); color: var(--error); }
+  .file-remove {
+    background: none;
+    border: none;
+    color: var(--neutral-400);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 2px;
+    line-height: 1;
+    color: var(--neutral-500);
+  }
+  .file-remove:hover { color: var(--error); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all .18s;
+    text-decoration: none;
+  }
+  .btn-primary { background: var(--primary); color: var(--white); border-color: var(--primary); }
+  .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-outline { background: var(--white); color: var(--neutral-700); border-color: var(--border); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-outline:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-success { background: var(--success); color: var(--white); border-color: var(--success); }
+  .btn-success:hover { opacity: .9; }
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Progress bar */
+  .progress-wrap {
+    height: 6px;
+    background: var(--neutral-200, #e5e7eb);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 12px 0 6px;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 4px;
+    transition: width .3s;
+    width: 0%;
+  }
+  .progress-label { font-size: 12px; color: var(--neutral-500); }
+
+  /* Result summary */
+  .result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--neutral-50);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    text-align: center;
+  }
+  .stat-label { font-size: 12px; color: var(--neutral-500); margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 700; color: var(--primary); }
+  .stat-unit { font-size: 13px; color: var(--neutral-500); margin-left: 2px; }
+
+  /* Result table */
+  .result-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-weight: 600;
+    padding: 10px 12px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--primary);
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--neutral-700);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--neutral-50); }
+  .td-total { font-weight: 700; color: var(--neutral-900); }
+  .td-cost { color: var(--primary); font-weight: 600; }
+  .td-err { color: var(--error); font-size: 12px; }
+
+  /* Config form */
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--neutral-700); }
+  .form-hint { font-size: 12px; color: var(--neutral-500); }
+  .form-input {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--neutral-900);
+    outline: none;
+    transition: border-color .18s;
+    width: 100%;
+  }
+  .form-input:focus { border-color: var(--primary); }
+  .form-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--neutral-500);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin: 20px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    grid-column: 1 / -1;
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  #toast.show { opacity: 1; }
+  #toast.toast-ok { background: var(--success); }
+  #toast.toast-err { background: var(--error); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--neutral-500);
+    font-size: 14px;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 640px) {
+    .config-grid { grid-template-columns: 1fr; }
+    .result-stats { grid-template-columns: 1fr; }
+  }
 </style>
-
 </head>
 
 <body>
 
-<h2>建设方案解析</h2>
+<header class="header">
+  <span class="header-title">信创适配费用评估系统</span>
+  <span class="header-badge">国产化改造工作量测算</span>
+</header>
 
-<textarea id="mdInput" placeholder="粘贴建设方案Markdown"></textarea>
+<main class="container">
 
-<br>
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab-btn active" onclick="switchTab('evaluate')" id="tab-evaluate" role="tab">批量评估</button>
+    <button class="tab-btn" onclick="switchTab('config')" id="tab-config" role="tab">参数配置</button>
+  </div>
 
-<button onclick="parsePlan()">解析方案</button>
+  <!-- ===== 批量评估 Tab ===== -->
+  <div class="tab-pane active" id="pane-evaluate">
 
-<button onclick="evaluate()">评估工作量</button>
+    <!-- 上传区域 -->
+    <div class="card">
+      <div class="card-title">上传建设方案文件</div>
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" multiple accept=".md,.txt" onchange="onFilesSelected(this.files)">
+        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="upload-text"><strong>点击选择文件</strong>&nbsp;或拖拽至此处</p>
+        <p class="upload-hint">支持 .md / .txt 格式，可一次选择多个文件</p>
+      </div>
 
-<button onclick="exportExcel()">导出Excel</button>
+      <!-- 文件列表 -->
+      <div class="file-list" id="fileList"></div>
 
-<h3>解析结果</h3>
+      <!-- 进度 -->
+      <div id="progressWrap" style="display:none; margin-top:16px;">
+        <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+        <span class="progress-label" id="progressLabel">准备中...</span>
+      </div>
 
-<pre id="result"></pre>
+      <!-- 操作按钮 -->
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-primary" id="btnRun" onclick="runBatch()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          开始评估
+        </button>
+        <button class="btn btn-outline" onclick="clearFiles()">清空列表</button>
+        <button class="btn btn-success" id="btnExport" onclick="exportExcel()" disabled style="margin-left:auto;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          导出 Excel
+        </button>
+      </div>
+    </div>
 
-<h3>评估结果</h3>
+    <!-- 评估结果 -->
+    <div class="card" id="resultSection" style="display:none;">
+      <div class="card-title">评估结果汇总</div>
 
-<pre id="evaluation"></pre>
+      <!-- 统计卡片 -->
+      <div class="result-stats">
+        <div class="stat-card">
+          <div class="stat-label">成功处理</div>
+          <div class="stat-value" id="statOk">0</div>
+          <span class="stat-unit">个文件</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">总工作量</div>
+          <div class="stat-value" id="statWork">0</div>
+          <span class="stat-unit">人天</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">估算总费用</div>
+          <div class="stat-value" id="statCost">0</div>
+          <span class="stat-unit">万元</span>
+        </div>
+      </div>
+
+      <!-- 明细表 -->
+      <div class="result-table-wrap">
+        <table id="resultTable">
+          <thead>
+            <tr>
+              <th>文件名</th>
+              <th>系统数</th>
+              <th>总工作量(人天)</th>
+              <th>开发费用(元)</th>
+              <th>管理费用(元)</th>
+              <th>风险费用(元)</th>
+              <th>合计费用(元)</th>
+              <th>状态</th>
+            </tr>
+          </thead>
+          <tbody id="resultBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== 参数配置 Tab ===== -->
+  <div class="tab-pane" id="pane-config">
+    <div class="card">
+      <div class="card-title">评估参数配置</div>
+      <div class="config-grid" id="configForm">
+        <p class="form-section-title">工作量系数（单位：人天）</p>
+        <div class="form-group">
+          <label class="form-label" for="p_module_factor">模块系数</label>
+          <span class="form-hint">每个功能模块对应的人天数</span>
+          <input class="form-input" type="number" step="0.1" id="p_module_factor" name="module_factor">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="p_interface_factor">接口系数</label>
+          <span class="form-hint">每个接口对应的人天数</span>
+          <input class="form-input" type="number" step="0.1" id="p_interface_factor" name="interface_factor">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="p_table_factor">数据表系数</label>
+          <span class="form-hint">每张数据库表对应的人天数</span>
+          <input class="form-input" type="number" step="0.01" id="p_table_factor" name="table_factor">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="p_data_factor">数据量系数</label>
+          <span class="form-hint">每 GB 数据对应的人天数</span>
+          <input class="form-input" type="number" step="0.001" id="p_data_factor" name="data_factor">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="p_user_factor">用户数系数</label>
+          <span class="form-hint">每个并发用户对应的人天数</span>
+          <input class="form-input" type="number" step="0.001" id="p_user_factor" name="user_factor">
+        </div>
+
+        <p class="form-section-title">费用参数</p>
+        <div class="form-group">
+          <label class="form-label" for="p_price_per_day">人天单价（元）</label>
+          <span class="form-hint">每人天的开发费用（元）</span>
+          <input class="form-input" type="number" step="100" id="p_price_per_day" name="price_per_day">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="p_management_rate">管理费率</label>
+          <span class="form-hint">管理费占开发费用的比例（如 0.1 = 10%）</span>
+          <input class="form-input" type="number" step="0.01" id="p_management_rate" name="management_rate">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="p_risk_rate">风险系数</label>
+          <span class="form-hint">风险费占开发费用的比例（如 0.15 = 15%）</span>
+          <input class="form-input" type="number" step="0.01" id="p_risk_rate" name="risk_rate">
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:24px;">
+        <button class="btn btn-primary" onclick="saveConfig()">保存配置</button>
+        <button class="btn btn-outline" onclick="loadConfigToForm()">重置为当前值</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div id="toast"></div>
 
 <script src="/static/app.js"></script>
-
 </body>
 </html>
