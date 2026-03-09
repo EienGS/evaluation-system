@@ -6,6 +6,10 @@ from config_loader import load_config
 from openpyxl import Workbook
 from flask import send_file
 import io
+import json
+import os
+
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config_params.json")
 
 app = Flask(__name__)
 
@@ -37,6 +41,27 @@ def evaluate():
     result = calculate_total(normalized, config)
 
     return jsonify(result)
+
+@app.route("/api/config", methods=["GET"])
+def get_config():
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            config = json.load(f)
+        return jsonify(config)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/config", methods=["POST"])
+def save_config():
+    try:
+        new_config = request.json
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(new_config, f, ensure_ascii=False, indent=2)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/export_excel", methods=["POST"])
 def export_excel():
