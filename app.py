@@ -42,7 +42,7 @@ def evaluate():
 
     return jsonify(result)
 
-@app.route("/api/config", methods=["GET"])
+@app.route("/config", methods=["GET"])
 def get_config():
     try:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -52,7 +52,7 @@ def get_config():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/config", methods=["POST"])
+@app.route("/config", methods=["POST"])
 def save_config():
     try:
         new_config = request.json

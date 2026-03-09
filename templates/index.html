@@ -6,24 +6,103 @@
 
 <style>
 
-body{
+body {
     font-family: Arial;
-    margin:40px;
+    margin: 40px;
 }
 
-textarea{
-    width:100%;
-    height:300px;
+textarea {
+    width: 100%;
+    height: 300px;
 }
 
-button{
-    padding:10px 20px;
-    margin-top:10px;
+button {
+    padding: 10px 20px;
+    margin-top: 10px;
 }
 
-pre{
-    background:#f5f5f5;
-    padding:20px;
+pre {
+    background: #f5f5f5;
+    padding: 20px;
+}
+
+.tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ccc;
+}
+
+.tab-btn {
+    padding: 8px 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    margin-top: 0;
+}
+
+.tab-btn.active {
+    border-bottom: 2px solid #1a73e8;
+    color: #1a73e8;
+    margin-bottom: -2px;
+    font-weight: bold;
+}
+
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+.config-section h4 {
+    margin-bottom: 8px;
+    border-left: 4px solid #1a73e8;
+    padding-left: 8px;
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.config-item label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.config-item span {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+.config-item input {
+    width: 100%;
+    padding: 6px 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#configMsg {
+    margin-top: 10px;
+    color: green;
+    font-size: 13px;
+}
+
+#configErrMsg {
+    margin-top: 10px;
+    color: red;
+    font-size: 13px;
 }
 
 </style>
@@ -32,25 +111,102 @@ pre{
 
 <body>
 
-<h2>建设方案解析</h2>
+<h2>信创适配费用评估系统</h2>
 
-<textarea id="mdInput" placeholder="粘贴建设方案Markdown"></textarea>
+<div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('evaluate')">批量评估</button>
+    <button class="tab-btn" onclick="switchTab('config')">参数配置</button>
+</div>
 
-<br>
+<!-- 批量评估 -->
+<div id="tab-evaluate" class="tab-panel active">
 
-<button onclick="parsePlan()">解析方案</button>
+    <textarea id="mdInput" placeholder="粘贴建设方案Markdown"></textarea>
 
-<button onclick="evaluate()">评估工作量</button>
+    <br>
 
-<button onclick="exportExcel()">导出Excel</button>
+    <button onclick="parsePlan()">解析方案</button>
+    <button onclick="evaluate()">评估工作量</button>
+    <button onclick="exportExcel()">导出Excel</button>
 
-<h3>解析结果</h3>
+    <h3>解析结果</h3>
+    <pre id="result"></pre>
 
-<pre id="result"></pre>
+    <h3>评估结果</h3>
+    <pre id="evaluation"></pre>
 
-<h3>评估结果</h3>
+</div>
 
-<pre id="evaluation"></pre>
+<!-- 参数配置 -->
+<div id="tab-config" class="tab-panel">
+
+    <div class="config-section">
+        <h4>工作量系数（单位：人天）</h4>
+        <div class="config-grid">
+
+            <div class="config-item">
+                <label>模块系数</label>
+                <span>每个功能模块对应的人天数</span>
+                <input type="number" id="module_factor" step="0.1">
+            </div>
+
+            <div class="config-item">
+                <label>接口系数</label>
+                <span>每个接口对应的人天数</span>
+                <input type="number" id="interface_factor" step="0.1">
+            </div>
+
+            <div class="config-item">
+                <label>数据表系数</label>
+                <span>每张数据库表对应的人天数</span>
+                <input type="number" id="table_factor" step="0.01">
+            </div>
+
+            <div class="config-item">
+                <label>数据量系数</label>
+                <span>每 GB 数据对应的人天数</span>
+                <input type="number" id="data_factor" step="0.001">
+            </div>
+
+            <div class="config-item">
+                <label>用户数系数</label>
+                <span>每个并发用户对应的人天数</span>
+                <input type="number" id="user_factor" step="0.001">
+            </div>
+
+        </div>
+    </div>
+
+    <div class="config-section">
+        <h4>费用参数</h4>
+        <div class="config-grid">
+
+            <div class="config-item">
+                <label>人天单价（元）</label>
+                <span>每人天的开发费用（元）</span>
+                <input type="number" id="price_per_day" step="100">
+            </div>
+
+            <div class="config-item">
+                <label>管理费率</label>
+                <span>管理费占开发费用的比例（如 0.1 = 10%）</span>
+                <input type="number" id="management_rate" step="0.01">
+            </div>
+
+            <div class="config-item">
+                <label>风险费率</label>
+                <span>风险不可预见费比例（如 0.15 = 15%）</span>
+                <input type="number" id="risk_rate" step="0.01">
+            </div>
+
+        </div>
+    </div>
+
+    <button onclick="saveConfig()">保存配置</button>
+    <span id="configMsg"></span>
+    <span id="configErrMsg"></span>
+
+</div>
 
 <script src="/static/app.js"></script>
 
