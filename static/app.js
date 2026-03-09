@@ -106,7 +106,6 @@ async function runAll() {
 
             if (json.success) {
                 item.status = "success"
-                console.log("[v0] evaluate result:", JSON.stringify(json.data))
                 evalResults.push(json.data)
                 appendResultRows(json.data)
                 successCount++
@@ -155,7 +154,7 @@ function appendResultRows(data) {
     // 文件分组标题行
     const header = document.createElement("tr")
     header.className = "row-file-header"
-    header.innerHTML = `<td colspan="13">${filename}</td>`
+    header.innerHTML = `<td colspan="16">${filename}</td>`
     tbody.appendChild(header)
 
     // 各系统行
@@ -167,7 +166,7 @@ function appendResultRows(data) {
             fmt(sys.db_work), fmt(sys.data_work), fmt(sys.user_work),
             sys.complexity,
             fmt(sys.total_work),
-            "", "", "", ""
+            "", "", "", "", "", "", ""
         ].map(v => `<td>${v}</td>`).join("")
         tbody.appendChild(tr)
     })
@@ -179,10 +178,13 @@ function appendResultRows(data) {
         "", "【汇总】",
         "", "", "", "", "", "",
         fmt(data.total_workload),
-        fmtCost(cost.dev_cost),
+        fmtCost(cost.labor_cost),
         fmtCost(cost.management_cost),
         fmtCost(cost.risk_cost),
-        fmtCost(cost.total_cost)
+        fmtCost(cost.test_cost),
+        fmtCost(cost.subtotal),
+        fmtCost(cost.total_excl_tax),
+        fmtCost(cost.total_incl_tax)
     ].map(v => `<td>${v}</td>`).join("")
     tbody.appendChild(summary)
 }

@@ -90,10 +90,13 @@ def generate_excel(results):
         "权限工作量(人天)",
         "复杂度系数",
         "系统工作量(人天)",
-        "开发费用(元)",
+        "人工费(元)",
         "管理费(元)",
         "风险费(元)",
-        "总费用(元)"
+        "测试费(元)",
+        "小计(元)",
+        "不含税总价(元)",
+        "含税总价(元)"
     ])
 
     for item in results:
@@ -110,17 +113,20 @@ def generate_excel(results):
                 sys.get("user_work", ""),
                 sys.get("complexity", ""),
                 sys.get("total_work", ""),
-                "", "", "", ""
+                "", "", "", "", "", "", ""
             ])
         ws.append([
             filename,
             "【汇总】",
             "", "", "", "", "", "",
             item.get("total_workload", ""),
-            cost.get("dev_cost", ""),
+            cost.get("labor_cost", ""),
             cost.get("management_cost", ""),
             cost.get("risk_cost", ""),
-            cost.get("total_cost", "")
+            cost.get("test_cost", ""),
+            cost.get("subtotal", ""),
+            cost.get("total_excl_tax", ""),
+            cost.get("total_incl_tax", "")
         ])
         ws.append([])
 
