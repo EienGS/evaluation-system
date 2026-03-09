@@ -1,214 +1,395 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>信创评估系统 - 建设方案解析</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信创适配费用评估系统</title>
 <style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    font-family: Arial;
-    margin: 40px;
+    font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100vh;
 }
 
-textarea {
-    width: 100%;
-    height: 300px;
+/* 顶栏 */
+.topbar {
+    background: #1a3a6e;
+    color: #fff;
+    padding: 0 32px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
+.topbar h1 { font-size: 16px; font-weight: 600; letter-spacing: 1px; }
+.topbar span { font-size: 13px; opacity: 0.7; }
 
-button {
-    padding: 10px 20px;
-    margin-top: 10px;
-}
+/* 主容器 */
+.container { max-width: 1100px; margin: 32px auto; padding: 0 24px; }
 
-pre {
-    background: #f5f5f5;
-    padding: 20px;
-}
-
+/* Tabs */
 .tabs {
     display: flex;
-    gap: 0;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #ccc;
+    gap: 4px;
+    margin-bottom: 0;
+    border-bottom: none;
 }
-
 .tab-btn {
-    padding: 8px 24px;
+    padding: 10px 28px;
     border: none;
-    background: none;
+    background: #fff;
     cursor: pointer;
     font-size: 14px;
-    color: #555;
-    margin-top: 0;
+    color: #666;
+    border-radius: 8px 8px 0 0;
+    border: 1px solid #dde1e9;
+    border-bottom: none;
+    position: relative;
+    bottom: -1px;
 }
-
 .tab-btn.active {
-    border-bottom: 2px solid #1a73e8;
-    color: #1a73e8;
-    margin-bottom: -2px;
-    font-weight: bold;
+    background: #fff;
+    color: #1a3a6e;
+    font-weight: 600;
+    border-top: 2px solid #1a3a6e;
 }
 
-.tab-panel {
-    display: none;
+/* 卡片 */
+.card {
+    background: #fff;
+    border-radius: 0 8px 8px 8px;
+    border: 1px solid #dde1e9;
+    padding: 28px 32px;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* 上传区 */
+.upload-area {
+    border: 2px dashed #b0bcd4;
+    border-radius: 8px;
+    padding: 36px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    background: #f7f9fc;
+}
+.upload-area:hover, .upload-area.drag-over {
+    border-color: #1a3a6e;
+    background: #eef2f9;
+}
+.upload-area input[type="file"] { display: none; }
+.upload-icon { font-size: 36px; margin-bottom: 8px; color: #8aa0c0; }
+.upload-area p { color: #666; font-size: 14px; margin-top: 6px; }
+.upload-area p strong { color: #1a3a6e; }
+
+/* 文件列表 */
+.file-list { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #f7f9fc;
+    border-radius: 6px;
+    border: 1px solid #dde1e9;
+    font-size: 13px;
+}
+.file-item .file-name { flex: 1; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-item .file-status {
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    min-width: 60px;
+    text-align: center;
+}
+.status-pending { background: #f0f2f5; color: #888; }
+.status-running { background: #e8f0fe; color: #1a73e8; }
+.status-success { background: #e6f4ea; color: #188038; }
+.status-error   { background: #fce8e6; color: #c5221f; }
+.file-item .remove-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 16px;
+    padding: 0 4px;
+    line-height: 1;
+}
+.file-item .remove-btn:hover { color: #c5221f; }
+
+/* 操作栏 */
+.action-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
 }
 
-.tab-panel.active {
-    display: block;
+/* 按钮 */
+.btn {
+    padding: 9px 22px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.15s;
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: #1a3a6e; color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #15305c; }
+.btn-success { background: #188038; color: #fff; }
+.btn-success:hover:not(:disabled) { background: #146430; }
+.btn-outline {
+    background: #fff;
+    color: #1a3a6e;
+    border: 1px solid #1a3a6e;
+}
+.btn-outline:hover:not(:disabled) { background: #eef2f9; }
+
+/* 进度提示 */
+.progress-msg { font-size: 13px; color: #666; }
+
+/* 结果区 */
+.result-section { margin-top: 28px; }
+.result-section h3 {
+    font-size: 15px;
+    color: #1a3a6e;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
 }
 
+/* 结果表格 */
+.result-table-wrap { overflow-x: auto; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+th {
+    background: #1a3a6e;
+    color: #fff;
+    padding: 9px 12px;
+    text-align: left;
+    font-weight: 500;
+    white-space: nowrap;
+}
+td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    white-space: nowrap;
+}
+tr:hover td { background: #f7f9fc; }
+.row-summary td { background: #f0f4fb; font-weight: 600; color: #1a3a6e; }
+.row-file-header td {
+    background: #e8edf7;
+    font-weight: 600;
+    color: #1a3a6e;
+    font-size: 12px;
+    padding: 5px 12px;
+}
+
+/* 空态 */
+.empty-tip {
+    text-align: center;
+    padding: 40px 0;
+    color: #aaa;
+    font-size: 13px;
+}
+
+/* 错误详情 */
+.error-detail {
+    font-size: 12px;
+    color: #c5221f;
+    margin-left: 10px;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 参数配置 */
+.config-section { margin-bottom: 28px; }
 .config-section h4 {
-    margin-bottom: 8px;
-    border-left: 4px solid #1a73e8;
-    padding-left: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a3a6e;
+    margin-bottom: 16px;
+    padding-left: 10px;
+    border-left: 3px solid #1a3a6e;
 }
-
 .config-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    margin-bottom: 24px;
 }
-
 .config-item label {
     display: block;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 600;
     margin-bottom: 2px;
+    color: #333;
 }
-
 .config-item span {
     display: block;
     font-size: 12px;
     color: #888;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
-
 .config-item input {
     width: 100%;
-    padding: 6px 8px;
-    box-sizing: border-box;
+    padding: 7px 10px;
     border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-#configMsg {
-    margin-top: 10px;
-    color: green;
+    border-radius: 5px;
     font-size: 13px;
 }
-
-#configErrMsg {
-    margin-top: 10px;
-    color: red;
-    font-size: 13px;
-}
-
+.config-item input:focus { outline: none; border-color: #1a3a6e; }
+.save-bar { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.msg-ok  { color: #188038; font-size: 13px; }
+.msg-err { color: #c5221f; font-size: 13px; }
 </style>
-
 </head>
-
 <body>
 
-<h2>信创适配费用评估系统</h2>
-
-<div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('evaluate')">批量评估</button>
-    <button class="tab-btn" onclick="switchTab('config')">参数配置</button>
+<div class="topbar">
+    <h1>信创适配费用评估系统</h1>
+    <span>国产化改造工作量测算</span>
 </div>
 
-<!-- 批量评估 -->
-<div id="tab-evaluate" class="tab-panel active">
+<div class="container">
 
-    <textarea id="mdInput" placeholder="粘贴建设方案Markdown"></textarea>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('evaluate', this)">批量评估</button>
+        <button class="tab-btn" onclick="switchTab('config', this)">参数配置</button>
+    </div>
 
-    <br>
+    <!-- 批量评估 -->
+    <div id="tab-evaluate" class="tab-panel active">
+        <div class="card">
 
-    <button onclick="parsePlan()">解析方案</button>
-    <button onclick="evaluate()">评估工作量</button>
-    <button onclick="exportExcel()">导出Excel</button>
-
-    <h3>解析结果</h3>
-    <pre id="result"></pre>
-
-    <h3>评估结果</h3>
-    <pre id="evaluation"></pre>
-
-</div>
-
-<!-- 参数配置 -->
-<div id="tab-config" class="tab-panel">
-
-    <div class="config-section">
-        <h4>工作量系数（单位：人天）</h4>
-        <div class="config-grid">
-
-            <div class="config-item">
-                <label>模块系数</label>
-                <span>每个功能模块对应的人天数</span>
-                <input type="number" id="module_factor" step="0.1">
+            <!-- 上传区 -->
+            <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">&#128196;</div>
+                <p><strong>点击选择</strong> 或将 Markdown 文件拖放到此处</p>
+                <p>支持同时导入多个 .md 文件</p>
+                <input type="file" id="fileInput" multiple accept=".md,.markdown" onchange="addFiles(this.files)">
             </div>
 
-            <div class="config-item">
-                <label>接口系数</label>
-                <span>每个接口对应的人天数</span>
-                <input type="number" id="interface_factor" step="0.1">
+            <!-- 文件列表 -->
+            <div class="file-list" id="fileList"></div>
+
+            <!-- 操作栏 -->
+            <div class="action-bar">
+                <button class="btn btn-primary" id="runBtn" onclick="runAll()" disabled>开始评估</button>
+                <button class="btn btn-success" id="exportBtn" onclick="exportExcel()" disabled>导出 Excel</button>
+                <button class="btn btn-outline" onclick="clearAll()">清空</button>
+                <span class="progress-msg" id="progressMsg"></span>
             </div>
 
-            <div class="config-item">
-                <label>数据表系数</label>
-                <span>每张数据库表对应的人天数</span>
-                <input type="number" id="table_factor" step="0.01">
-            </div>
-
-            <div class="config-item">
-                <label>数据量系数</label>
-                <span>每 GB 数据对应的人天数</span>
-                <input type="number" id="data_factor" step="0.001">
-            </div>
-
-            <div class="config-item">
-                <label>用户数系数</label>
-                <span>每个并发用户对应的人天数</span>
-                <input type="number" id="user_factor" step="0.001">
+            <!-- 结果区 -->
+            <div class="result-section" id="resultSection" style="display:none">
+                <h3>评估结果</h3>
+                <div class="result-table-wrap">
+                    <table id="resultTable">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>系统名称</th>
+                                <th>模块(人天)</th>
+                                <th>接口(人天)</th>
+                                <th>数据库(人天)</th>
+                                <th>数据对接(人天)</th>
+                                <th>权限(人天)</th>
+                                <th>复杂度</th>
+                                <th>工作量(人天)</th>
+                                <th>开发费用(元)</th>
+                                <th>管理费(元)</th>
+                                <th>风险费(元)</th>
+                                <th>总费用(元)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultBody"></tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
     </div>
 
-    <div class="config-section">
-        <h4>费用参数</h4>
-        <div class="config-grid">
+    <!-- 参数配置 -->
+    <div id="tab-config" class="tab-panel">
+        <div class="card">
 
-            <div class="config-item">
-                <label>人天单价（元）</label>
-                <span>每人天的开发费用（元）</span>
-                <input type="number" id="price_per_day" step="100">
+            <div class="config-section">
+                <h4>工作量系数（单位：人天）</h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>模块系数</label>
+                        <span>每个功能模块对应的人天数</span>
+                        <input type="number" id="module_factor" step="0.1" min="0">
+                    </div>
+                    <div class="config-item">
+                        <label>接口系数</label>
+                        <span>每个接口对应的人天数</span>
+                        <input type="number" id="interface_factor" step="0.1" min="0">
+                    </div>
+                    <div class="config-item">
+                        <label>数据表系数</label>
+                        <span>每张数据库表对应的人天数</span>
+                        <input type="number" id="table_factor" step="0.01" min="0">
+                    </div>
+                    <div class="config-item">
+                        <label>数据量系数</label>
+                        <span>每 GB 数据对应的人天数</span>
+                        <input type="number" id="data_factor" step="0.001" min="0">
+                    </div>
+                    <div class="config-item">
+                        <label>用户数系数</label>
+                        <span>每个并发用户对应的人天数</span>
+                        <input type="number" id="user_factor" step="0.001" min="0">
+                    </div>
+                </div>
             </div>
 
-            <div class="config-item">
-                <label>管理费率</label>
-                <span>管理费占开发费用的比例（如 0.1 = 10%）</span>
-                <input type="number" id="management_rate" step="0.01">
+            <div class="config-section">
+                <h4>费用参数</h4>
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label>人天单价（元）</label>
+                        <span>每人天的开发费用（元）</span>
+                        <input type="number" id="price_per_day" step="100" min="0">
+                    </div>
+                    <div class="config-item">
+                        <label>管理费率</label>
+                        <span>管理费占开发费用的比例（如 0.1 = 10%）</span>
+                        <input type="number" id="management_rate" step="0.01" min="0">
+                    </div>
+                    <div class="config-item">
+                        <label>风险费率</label>
+                        <span>风险不可预见费比例（如 0.15 = 15%）</span>
+                        <input type="number" id="risk_rate" step="0.01" min="0">
+                    </div>
+                </div>
             </div>
 
-            <div class="config-item">
-                <label>风险费率</label>
-                <span>风险不可预见费比例（如 0.15 = 15%）</span>
-                <input type="number" id="risk_rate" step="0.01">
+            <div class="save-bar">
+                <button class="btn btn-primary" onclick="saveConfig()">保存配置</button>
+                <span class="msg-ok" id="configMsg"></span>
+                <span class="msg-err" id="configErrMsg"></span>
             </div>
 
         </div>
     </div>
-
-    <button onclick="saveConfig()">保存配置</button>
-    <span id="configMsg"></span>
-    <span id="configErrMsg"></span>
 
 </div>
 
 <script src="/static/app.js"></script>
-
 </body>
 </html>
